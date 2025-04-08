@@ -80,6 +80,9 @@ export const sendMessage = async (
   suggestionCount?: number | null
 ) => {
   try {
+    console.log('API isteği gönderiliyor:', { message, step, industry, ageRange, targetingType, suggestionCount });
+    
+    // Doğrudan backend API endpoint'ine istek gönder
     const response = await apiClient.post('/chat/message', {
       message,
       step,
@@ -88,6 +91,8 @@ export const sendMessage = async (
       targetingType,
       suggestionCount
     });
+    
+    console.log('API yanıtı:', response.data);
     return response.data;
   } catch (error) {
     console.error('Mesaj gönderme hatası:', error);

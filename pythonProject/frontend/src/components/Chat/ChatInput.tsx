@@ -49,10 +49,34 @@ const ChatInput: React.FC = () => {
         case 'initial':
           if (input.toLowerCase().includes('başla') || input.toLowerCase().includes('başlamak')) {
             // API çağrısı yap
-            const response = await sendMessage(input, 'initial');
-            addMessage(response.data.content, 'assistant');
-            setCurrentStep('industry');
-            addMessage('Örnek: Kadın Kuaför, E-ticaret, Fitness, Eğitim...', 'system');
+            try {
+              console.log("API'ye istek gönderiliyor... (initial)");
+              const response = await sendMessage(input, 'initial');
+              console.log("API yanıtı:", response);
+              
+              if (response && response.data && response.data.content) {
+                addMessage(response.data.content, 'assistant');
+                setCurrentStep('industry');
+                setTimeout(() => {
+                  addMessage('Örnek: Kadın Kuaför, E-ticaret, Fitness, Eğitim...', 'system');
+                }, 300);
+              } else {
+                // Fallback yanıt
+                addMessage('Hangi sektörde faaliyet gösteriyorsunuz?', 'assistant');
+                setCurrentStep('industry');
+                setTimeout(() => {
+                  addMessage('Örnek: Kadın Kuaför, E-ticaret, Fitness, Eğitim...', 'system');
+                }, 300);
+              }
+            } catch (error) {
+              console.error("API hatası (initial):", error);
+              // Fallback yanıt
+              addMessage('Hangi sektörde faaliyet gösteriyorsunuz?', 'assistant');
+              setCurrentStep('industry');
+              setTimeout(() => {
+                addMessage('Örnek: Kadın Kuaför, E-ticaret, Fitness, Eğitim...', 'system');
+              }, 300);
+            }
           } else {
             addMessage('Başlamak için "Başlamak istiyorum" yazabilirsiniz.', 'assistant');
           }
@@ -61,21 +85,51 @@ const ChatInput: React.FC = () => {
         case 'industry':
           setIndustry(input);
           // API çağrısı yap
-          const industryResponse = await sendMessage(input, 'industry');
-          addMessage(industryResponse.data.content, 'assistant');
-          setCurrentStep('ageRange');
-          addMessage('Örnek: 25-45', 'system');
+          try {
+            const industryResponse = await sendMessage(input, 'industry');
+            if (industryResponse && industryResponse.data && industryResponse.data.content) {
+              addMessage(industryResponse.data.content, 'assistant');
+            } else {
+              // Fallback yanıt
+              addMessage('Yaklaşık olarak hangi yaş aralığındaki kullanıcıları hedeflemek istersiniz?', 'assistant');
+            }
+            setCurrentStep('ageRange');
+            setTimeout(() => {
+              addMessage('Örnek: 25-45', 'system');
+            }, 300);
+          } catch (error) {
+            console.error("API hatası (industry):", error);
+            addMessage('Yaklaşık olarak hangi yaş aralığındaki kullanıcıları hedeflemek istersiniz?', 'assistant');
+            setCurrentStep('ageRange');
+            setTimeout(() => {
+              addMessage('Örnek: 25-45', 'system');
+            }, 300);
+          }
           break;
           
         case 'ageRange':
           setAgeRange(input);
           // API çağrısı yap
-          const ageResponse = await sendMessage(input, 'ageRange');
-          addMessage(ageResponse.data.content, 'assistant');
-          setCurrentStep('targetingType');
-          setTimeout(() => {
-            addMessage('1. Tekli Hedefleme\n2. Grup Hedefleme', 'system');
-          }, 300);
+          try {
+            const ageResponse = await sendMessage(input, 'ageRange');
+            if (ageResponse && ageResponse.data && ageResponse.data.content) {
+              addMessage(ageResponse.data.content, 'assistant');
+            } else {
+              // Fallback yanıt
+              addMessage('Hangi tür hedefleme önerisi almak istersiniz?', 'assistant');
+            }
+            setCurrentStep('targetingType');
+            setTimeout(() => {
+              addMessage('1. Tekli Hedefleme\n2. Grup Hedefleme', 'system');
+            }, 300);
+          } catch (error) {
+            console.error("API hatası (ageRange):", error);
+            addMessage('Hangi tür hedefleme önerisi almak istersiniz?', 'assistant');
+            setCurrentStep('targetingType');
+            setTimeout(() => {
+              addMessage('1. Tekli Hedefleme\n2. Grup Hedefleme', 'system');
+            }, 300);
+          }
           break;
           
         case 'targetingType':
@@ -85,9 +139,20 @@ const ChatInput: React.FC = () => {
             setTargetingType('group');
           }
           // API çağrısı yap
-          const typeResponse = await sendMessage(input, 'targetingType');
-          addMessage(typeResponse.data.content, 'assistant');
-          setCurrentStep('suggestionCount');
+          try {
+            const typeResponse = await sendMessage(input, 'targetingType');
+            if (typeResponse && typeResponse.data && typeResponse.data.content) {
+              addMessage(typeResponse.data.content, 'assistant');
+            } else {
+              // Fallback yanıt
+              addMessage('Kaç adet öneri almak istersiniz? (Lütfen sadece sayı girin)', 'assistant');
+            }
+            setCurrentStep('suggestionCount');
+          } catch (error) {
+            console.error("API hatası (targetingType):", error);
+            addMessage('Kaç adet öneri almak istersiniz? (Lütfen sadece sayı girin)', 'assistant');
+            setCurrentStep('suggestionCount');
+          }
           break;
           
         case 'suggestionCount':
@@ -110,8 +175,15 @@ const ChatInput: React.FC = () => {
                 count
               );
               
+              if (resultResponse && resultResponse.data && resultResponse.data.content) {
+                addMessage(resultResponse.data.content, 'assistant');
+              } else {
+                // Fallback content
+                const fallbackContent = generateMockSuggestions(industry!, ageRange!, targetingType!, count);
+                addMessage(fallbackContent, 'assistant');
+              }
+              
               setCurrentStep('result');
-              addMessage(resultResponse.data.content, 'assistant');
               
               // "Biraz Daha Öner" ve "Yeniden Başla" butonlarını ekle
               setTimeout(() => {
@@ -144,11 +216,15 @@ const ChatInput: React.FC = () => {
                 const moreResponse = await getMoreSuggestions(
                   industry,
                   ageRange,
-                  targetingType,
+                  targetingType as any,
                   suggestionCount
                 );
                 
-                addMessage(moreResponse.data.content, 'assistant');
+                if (moreResponse && moreResponse.data && moreResponse.data.content) {
+                  addMessage(moreResponse.data.content, 'assistant');
+                } else {
+                  throw new Error('API yanıt döndürmedi');
+                }
               } catch (moreError) {
                 console.error('Alternatif öneriler hatası:', moreError);
                 // Fallback yanıt
