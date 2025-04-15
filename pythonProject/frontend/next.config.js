@@ -1,17 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   /* config options here */
-  output: 'standalone',
-  typescript: {
-    // !! WARN !!
-    // Type checking kısmını dağıtım sürecinde atlıyoruz
-    // Böylece bazı tip hatalarında build'in başarısız olması engelleniyor
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    // Dağıtım sürecinde ESLint kontrolünü atlıyoruz
-    ignoreDuringBuilds: true,
-  },
   env: {
     // Use different API URLs based on environment
     // In development, use localhost
