@@ -1,19 +1,32 @@
 import express, { Request, Response } from 'express';
 import app from '../src/app';
 
-// If app doesn't exist or doesn't work properly, this will still work
-const expressInstance = express.Router();
-expressInstance.get('/debug', (req: Request, res: Response) => {
+// Debug routes for serverless function
+const router = express.Router();
+
+router.get('/debug', (req: Request, res: Response) => {
   res.json({
     status: 'ok',
     message: 'Debug endpoint is working!',
     timestamp: new Date().toISOString(),
-    env: process.env.NODE_ENV || 'not set'
+    env: process.env.NODE_ENV || 'not set',
+    path: req.path,
+    originalUrl: req.originalUrl,
+    baseUrl: req.baseUrl
   });
 });
 
-// Attach the debug route to the app
-app.use(expressInstance);
+// Attach the debug route
+app.use(router);
 
-// Serverless fonksiyon olarak Express uygulamasını export ediyoruz
+// Add direct access for serverless
+app.get('/', (req: Request, res: Response) => {
+  res.json({
+    status: 'ok',
+    message: 'Backend is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Export the Express app as a serverless function
 export default app; 

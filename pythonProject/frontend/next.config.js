@@ -4,9 +4,9 @@ const nextConfig = {
   env: {
     // Use different API URLs based on environment
     // In development, use localhost
-    // In production, use the deployed backend URL
+    // In production, use the deployed backend URL or relative path
     NEXT_PUBLIC_API_URL: process.env.NODE_ENV === 'production' 
-      ? process.env.NEXT_PUBLIC_API_URL || 'https://meta-ads-backend.vercel.app/api/v1'
+      ? '/api/v1'  // Aynı domain'de çalışacağı için göreceli yol kullanıyoruz
       : 'http://localhost:3001/api/v1'
   },
   async headers() {
