@@ -7,8 +7,7 @@
     },
     {
       "src": "frontend",
-      "use": "@vercel/next",
-      "config": { "distDir": ".next" }
+      "use": "@vercel/next"
     }
   ],
   "routes": [
@@ -17,19 +16,8 @@
       "dest": "/backend/api/index.ts"
     },
     {
-      "src": "/_next/(.*)",
-      "dest": "/frontend/_next/$1"
-    },
-    {
-      "src": "/(.*\\.(js|css|ico|png|jpg|jpeg|svg|json))",
-      "dest": "/frontend/$1"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
       "src": "/(.*)",
-      "dest": "/frontend"
+      "dest": "/frontend/$1"
     }
   ]
 } 
